@@ -1,0 +1,7 @@
+{
+  "name": "protein-backend",
+  "scripts": {
+    "dev": "uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "celery": "celery -A celery_worker.celery worker --loglevel=info"
+  }
+}
