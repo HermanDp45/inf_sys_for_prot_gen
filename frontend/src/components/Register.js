@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { MdArrowForward, MdBiotech, MdPersonAdd } from 'react-icons/md';
 
+import ThemeToggle from './ThemeToggle';
 import { authApi } from '../utils/api';
 
-const Register = ({ onAuthSuccess }) => {
+const Register = ({ onAuthSuccess, theme, onToggleTheme }) => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: '',
@@ -48,9 +50,30 @@ const Register = ({ onAuthSuccess }) => {
 
   return (
     <div className="screen auth-screen">
-      <div className="auth-card">
-        <h1>Регистрация</h1>
-        <p className="muted">Создай аккаунт для работы с проектами по белкам</p>
+      <div className="auth-art">
+        <div className="brand-mark">
+          <MdBiotech />
+        </div>
+        <p className="eyebrow">Protein Design System</p>
+        <h1>Создай лабораторное пространство для генерации и анализа белковых структур.</h1>
+        <div className="auth-molecule" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+
+      <div className="auth-card animate-in">
+        <div className="auth-card-head">
+          <div>
+            <p className="eyebrow">Регистрация</p>
+            <h2>Новый аккаунт</h2>
+          </div>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        </div>
+        <p className="muted">После регистрации система сразу откроет личный кабинет.</p>
 
         <form onSubmit={handleSubmit} className="form-grid">
           <label>
@@ -104,7 +127,9 @@ const Register = ({ onAuthSuccess }) => {
           {error && <p className="error-text">{error}</p>}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
+            <MdPersonAdd />
             {loading ? 'Создаем...' : 'Создать аккаунт'}
+            <MdArrowForward />
           </button>
         </form>
 

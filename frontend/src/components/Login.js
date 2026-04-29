@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { MdArrowForward, MdBiotech, MdLock } from 'react-icons/md';
 
+import ThemeToggle from './ThemeToggle';
 import { authApi } from '../utils/api';
 
-const Login = ({ onAuthSuccess }) => {
+const Login = ({ onAuthSuccess, theme, onToggleTheme }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,9 +30,30 @@ const Login = ({ onAuthSuccess }) => {
 
   return (
     <div className="screen auth-screen">
-      <div className="auth-card">
-        <h1>Protein Design IS</h1>
-        <p className="muted">Вход в информационную систему генерации белков</p>
+      <div className="auth-art">
+        <div className="brand-mark">
+          <MdBiotech />
+        </div>
+        <p className="eyebrow">Protein Design System</p>
+        <h1>Проекты, структуры и генерация белков в одном рабочем пространстве.</h1>
+        <div className="auth-molecule" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+
+      <div className="auth-card animate-in">
+        <div className="auth-card-head">
+          <div>
+            <p className="eyebrow">Вход</p>
+            <h2>Добро пожаловать</h2>
+          </div>
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+        </div>
+        <p className="muted">Продолжи работу с проектами и 3D-структурами.</p>
 
         <form onSubmit={handleSubmit} className="form-grid">
           <label>
@@ -58,7 +81,9 @@ const Login = ({ onAuthSuccess }) => {
           {error && <p className="error-text">{error}</p>}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
+            <MdLock />
             {loading ? 'Входим...' : 'Войти'}
+            <MdArrowForward />
           </button>
         </form>
 

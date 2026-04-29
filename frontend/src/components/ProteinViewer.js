@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { MdArrowBack, MdDownload, MdScience } from 'react-icons/md';
 
 import MolStarViewer from './MolStarViewer';
+import ThemeToggle from './ThemeToggle';
 import { API_BASE_URL, proteinApi } from '../utils/api';
 
-const ProteinViewer = () => {
+const ProteinViewer = ({ theme, onToggleTheme }) => {
   const { structureId } = useParams();
   const navigate = useNavigate();
 
@@ -63,14 +65,24 @@ const ProteinViewer = () => {
 
   return (
     <div className="screen viewer-screen">
-      <header className="topbar">
-        <div>
-          <h1>{structure.name}</h1>
-          <p className="muted">Проект #{structure.project_id} · структура #{structure.id}</p>
+      <header className="app-header animate-in">
+        <div className="brand-line">
+          <div className="brand-mark small">
+            <MdScience />
+          </div>
+          <div>
+            <p className="eyebrow">Structure viewer</p>
+            <h1>{structure.name}</h1>
+            <p className="muted">Проект #{structure.project_id} · структура #{structure.id}</p>
+          </div>
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate(`/projects/${structure.project_id}`)}>
-          К проекту
-        </button>
+        <div className="top-actions">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <button className="btn btn-secondary" onClick={() => navigate(`/projects/${structure.project_id}`)}>
+            <MdArrowBack />
+            К проекту
+          </button>
+        </div>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -80,6 +92,7 @@ const ProteinViewer = () => {
           <div className="section-header">
             <h2>3D структура</h2>
             <a className="text-link" href={pdbUrl} target="_blank" rel="noreferrer">
+              <MdDownload />
               Открыть PDB
             </a>
           </div>

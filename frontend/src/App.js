@@ -14,8 +14,18 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   const isAuthenticated = useMemo(() => Boolean(token), [token]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
+  };
 
   const loadCurrentUser = async () => {
     try {
@@ -68,18 +78,30 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onAuthSuccess={handleAuthSuccess} />}
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login onAuthSuccess={handleAuthSuccess} theme={theme} onToggleTheme={toggleTheme} />
+            )
+          }
         />
         <Route
           path="/register"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register onAuthSuccess={handleAuthSuccess} />}
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Register onAuthSuccess={handleAuthSuccess} theme={theme} onToggleTheme={toggleTheme} />
+            )
+          }
         />
 
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <Dashboard user={user} onLogout={handleLogout} />
+              <Dashboard user={user} onLogout={handleLogout} theme={theme} onToggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
         />
@@ -88,7 +110,7 @@ function App() {
           path="/projects/:projectId"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <ProjectPage user={user} />
+              <ProjectPage user={user} theme={theme} onToggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
         />
@@ -97,7 +119,7 @@ function App() {
           path="/proteins/:structureId"
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated}>
-              <ProteinViewer />
+              <ProteinViewer theme={theme} onToggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
         />

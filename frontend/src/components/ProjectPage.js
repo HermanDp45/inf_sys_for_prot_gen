@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { MdArrowBack, MdDelete, MdSave, MdScience, MdUploadFile, MdVisibility } from 'react-icons/md';
 
+import ThemeToggle from './ThemeToggle';
 import { projectApi, proteinApi } from '../utils/api';
 
-const ProjectPage = () => {
+const ProjectPage = ({ theme, onToggleTheme }) => {
   const { projectId } = useParams();
   const navigate = useNavigate();
 
@@ -169,21 +171,50 @@ const ProjectPage = () => {
 
   return (
     <div className="screen project-screen">
-      <header className="topbar">
+      <header className="app-header animate-in">
         <div>
+          <p className="eyebrow">Project workspace</p>
           <h1>{project.name}</h1>
           <p className="muted">Проект #{project.id}</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
-          К проектам
-        </button>
+        <div className="top-actions">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <button className="btn btn-secondary" onClick={() => navigate('/dashboard')}>
+            <MdArrowBack />
+            К проектам
+          </button>
+        </div>
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      <section className="card">
-        <h2>Параметры проекта</h2>
-        <form className="form-grid" onSubmit={handleSaveProject}>
+      <section className="hero-panel animate-in delay-1">
+        <div>
+          <p className="eyebrow">Design board</p>
+          <h2>Генерация, загрузка и анализ структур</h2>
+          <p className="muted">Сначала задай описание проекта, затем переходи к структурам или параметрам генерации.</p>
+        </div>
+        <div className="hero-actions">
+          <button className="btn btn-primary" onClick={() => setTab('generate')}>
+            <MdScience />
+            Генерация
+          </button>
+          <button className="btn btn-secondary" onClick={() => setTab('upload')}>
+            <MdUploadFile />
+            Загрузить PDB
+          </button>
+        </div>
+      </section>
+
+      <section className="card animate-in delay-2">
+        <div className="section-header">
+          <h2>Параметры проекта</h2>
+          <button className="btn btn-primary" type="submit" form="project-form" disabled={savingProject}>
+            <MdSave />
+            {savingProject ? 'Сохраняем...' : 'Сохранить'}
+          </button>
+        </div>
+        <form id="project-form" className="form-grid" onSubmit={handleSaveProject}>
           <label>
             Название
             <input
@@ -203,26 +234,26 @@ const ProjectPage = () => {
               maxLength={2000}
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={savingProject}>
-            {savingProject ? 'Сохраняем...' : 'Сохранить проект'}
-          </button>
         </form>
       </section>
 
-      <div className="tabs-row">
+      <div className="tabs-row animate-in delay-3">
         <button className={`tab-btn ${tab === 'structures' ? 'active' : ''}`} onClick={() => setTab('structures')}>
+          <MdVisibility />
           Структуры
         </button>
         <button className={`tab-btn ${tab === 'generate' ? 'active' : ''}`} onClick={() => setTab('generate')}>
+          <MdScience />
           Генерация
         </button>
         <button className={`tab-btn ${tab === 'upload' ? 'active' : ''}`} onClick={() => setTab('upload')}>
+          <MdUploadFile />
           Загрузка PDB
         </button>
       </div>
 
       {tab === 'structures' && (
-        <section className="card">
+        <section className="card animate-in">
           <div className="section-header">
             <h2>Структуры белков</h2>
             <button className="btn btn-secondary" onClick={loadData}>
@@ -250,10 +281,11 @@ const ProjectPage = () => {
 
                   <div className="actions-row">
                     <button className="btn btn-primary" onClick={() => navigate(`/proteins/${structure.id}`)}>
+                      <MdVisibility />
                       3D просмотр
                     </button>
-                    <button className="btn btn-danger" onClick={() => handleDeleteStructure(structure.id)}>
-                      Удалить
+                    <button className="icon-btn danger" onClick={() => handleDeleteStructure(structure.id)} title="Удалить структуру">
+                      <MdDelete />
                     </button>
                   </div>
                 </article>
@@ -264,7 +296,7 @@ const ProjectPage = () => {
       )}
 
       {tab === 'generate' && (
-        <section className="card">
+        <section className="card animate-in">
           <h2>Генерация / модификация белка</h2>
           <form className="form-grid" onSubmit={handleGenerate}>
             <label>
@@ -327,6 +359,7 @@ const ProjectPage = () => {
             </label>
 
             <button className="btn btn-primary" type="submit" disabled={generating}>
+              <MdScience />
               {generating ? 'Генерируем...' : 'Запустить генерацию'}
             </button>
           </form>
@@ -334,7 +367,7 @@ const ProjectPage = () => {
       )}
 
       {tab === 'upload' && (
-        <section className="card">
+        <section className="card animate-in">
           <h2>Загрузка готовой структуры</h2>
           <form className="form-grid" onSubmit={handleUpload}>
             <label>
@@ -360,6 +393,7 @@ const ProjectPage = () => {
             </label>
 
             <button className="btn btn-primary" type="submit" disabled={uploading}>
+              <MdUploadFile />
               {uploading ? 'Загружаем...' : 'Загрузить структуру'}
             </button>
           </form>
