@@ -1,166 +1,118 @@
 import React, { useState } from 'react';
-import { 
-  Box, Button, Field, Input, 
-  VStack, Heading, Text, Flex
-} from '@chakra-ui/react';
-import { Icon } from '@chakra-ui/react';
-import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Register = ({ onRegister }) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+import { authApi } from '../utils/api';
+
+const Register = ({ onAuthSuccess }) => {
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    if (password !== confirmPassword) {
-      alert('Passwords do not match');
-      setIsLoading(false);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Пароли не совпадают');
       return;
     }
 
+    setLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/users/', {
-        username,
-        email,
-        password
+      await authApi.register({
+        username: form.username.trim(),
+        email: form.email.trim(),
+        password: form.password,
       });
 
-      // Automatically log in after registration
-      const loginResponse = await axios.post('http://localhost:8000/token', 
-        new URLSearchParams({
-          username: username,
-          password: password,
-          grant_type: 'password'
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-      
-      onRegister(loginResponse.data.access_token, { username, email: response.data.email });
-      navigate('/dashboard');
-      
-      alert('Registration successful! Welcome to Protein Design System!');
-    } catch (error) {
-      let errorMessage = 'Registration failed';
-      if (error.response) {
-        if (error.response.data.detail === 'Username already registered') {
-          errorMessage = 'Username already exists';
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        }
-      }
-      
-      alert(`Registration failed: ${errorMessage}`);
+      const loginResult = await authApi.login(form.username.trim(), form.password);
+      await onAuthSuccess(loginResult.access_token);
+      navigate('/dashboard', { replace: true });
+    } catch (apiError) {
+      setError(apiError.message || 'Не удалось создать аккаунт');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleViewPassword = () => setShowPassword(!showPassword);
-  const handleViewConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
-
   return (
-    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box p={8} maxWidth="500px" borderWidth={1} borderRadius={8} boxShadow="lg">
-        <VStack spacing={4} align="stretch">
-          <Heading textAlign="center">Create Account</Heading>
-          <form onSubmit={handleSubmit}>
-            <Field.Root required>
-              <Field.Label>Username</Field.Label>
-              <Input 
-                type="text" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
-                placeholder="Enter your username"
-                maxLength={50}
-              />
-            </Field.Root>
-            
-            <Field.Root mt={4} required>
-              <Field.Label>Email</Field.Label>
-              <Input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="Enter your email"
-                maxLength={100}
-              />
-            </Field.Root>
-            
-            <Field.Root mt={4} required>
-                <Field.Label>Password</Field.Label>
-                <Flex>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    minLength={8}
-                    flex="1"
-                  />
-                  <Button
-                    ml={10}
-                    h="1.75rem"
-                    size="sm"
-                    onClick={handleViewPassword}
-                    variant="ghost"
-                  >
-                    {showPassword ? <Icon as={MdVisibilityOff} /> : <Icon as={MdVisibility} />}
-                  </Button>
-                </Flex>
-            </Field.Root>
-           
-            
-            <Field.Root mt={4} required>
-                <Field.Label>Confirm Password</Field.Label>
-                <Flex>
-                    <Input 
-                    type={showConfirmPassword ? "text" : "password"} 
-                    value={confirmPassword} 
-                    onChange={(e) => setConfirmPassword(e.target.value)} 
-                    placeholder="Confirm your password"
-                    flex="1"
-                    />
+    <div className="screen auth-screen">
+      <div className="auth-card">
+        <h1>Регистрация</h1>
+        <p className="muted">Создай аккаунт для работы с проектами по белкам</p>
 
-                    <Button ml={10} h="1.75rem" size="sm" variant="ghost" onClick={handleViewConfirmPassword}>
-                        {showConfirmPassword ? <Icon as={MdVisibilityOff} /> : <Icon as={MdVisibility} />}
-                    </Button>
+        <form onSubmit={handleSubmit} className="form-grid">
+          <label>
+            Username
+            <input
+              name="username"
+              type="text"
+              value={form.username}
+              onChange={handleChange}
+              maxLength={50}
+              required
+            />
+          </label>
 
-                </Flex>
-            </Field.Root>
-            
-            <Button 
-              mt={6} 
-              colorScheme="green" 
-              width="full" 
-              type="submit" 
-              isLoading={isLoading}
-            >
-              Register
-            </Button>
-          </form>
-          <Text textAlign="center">
-            Already have an account?{' '}
-            <Button variant="link" colorScheme="blue" onClick={() => navigate('/login')}>
-              Login
-            </Button>
-          </Text>
-        </VStack>
-      </Box>
-    </Box>
+          <label>
+            Email
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              maxLength={100}
+              required
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              minLength={8}
+              required
+            />
+          </label>
+
+          <label>
+            Confirm password
+            <input
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              minLength={8}
+              required
+            />
+          </label>
+
+          {error && <p className="error-text">{error}</p>}
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Создаем...' : 'Создать аккаунт'}
+          </button>
+        </form>
+
+        <p className="muted auth-footer">
+          Уже есть аккаунт? <Link to="/login">Войти</Link>
+        </p>
+      </div>
+    </div>
   );
 };
 

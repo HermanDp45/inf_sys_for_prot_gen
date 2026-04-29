@@ -1,37 +1,68 @@
-# inf_sys_for_prot_gen
-information system for protein generation
+# Protein Design Information System
 
-## Starting
+Дипломный fullstack-проект: информационная система для управления проектами по генерации и анализу белков.
 
-### backend
+## Что реализовано
 
-**Terminal 1: server**
+- Регистрация и авторизация пользователей (JWT).
+- Личный кабинет пользователя.
+- Вкладка проектов: создание, просмотр, редактирование, удаление.
+- В рамках проекта:
+  - генерация нового белка по параметрам;
+  - сценарий "модификации" через параметры генерации;
+  - загрузка готового `.pdb` файла;
+  - список созданных/загруженных структур с метриками.
+- 3D-визуализация структуры на отдельной странице (Mol* viewer).
+- Хранение пользователей/проектов/структур в SQLite.
+
+## Стек
+
+- Frontend: React + React Router + Axios
+- Backend: FastAPI + SQLAlchemy
+- DB: SQLite (`app.db`)
+- Async (опционально): Celery + Redis (если не запущены, API использует fallback в синхронный режим)
+
+## Быстрый запуск
+
+### 1) Backend
+
 ```bash
- source backend/venv/bin/activate && uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+source backend/venv/bin/activate
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Terminal 2: Celery worker**
-```bash
-cd backend
-source venv/bin/activate
-npm run celery
-```
+API будет доступно на `http://localhost:8000`.
 
-```bash
-redis-server
-```
+### 2) Frontend
 
-```bash
- source backend/venv/bin/activate && celery -A backend.celery_worker.celery worker --loglevel=info
-```
-
-# Terminal 3: Frontend
 ```bash
 cd frontend
 npm start
 ```
 
-# Terminal 4: Redis (если не запущен как сервис)
+UI будет доступен на `http://localhost:3000`.
+
+## Опционально: Celery worker
+
+Если нужен асинхронный режим генерации через очередь:
+
+```bash
 redis-server
+```
 
+```bash
+source backend/venv/bin/activate
+celery -A backend.celery_worker.celery worker --loglevel=info
+```
 
+## Полезные эндпоинты
+
+- `POST /users/` — регистрация
+- `POST /token` — вход
+- `GET /users/me` — профиль
+- `GET/POST /projects/`
+- `GET/PUT/DELETE /projects/{project_id}`
+- `GET /projects/{project_id}/protein-structures/`
+- `POST /projects/{project_id}/generate-protein-async/`
+- `POST /projects/{project_id}/upload-protein/`
+- `GET/DELETE /protein-structures/{structure_id}`

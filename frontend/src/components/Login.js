@@ -1,87 +1,72 @@
 import React, { useState } from 'react';
-import { 
-  Box, Button, Field, Input, 
-  VStack, Heading, Text
-} from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Login = ({ onLogin }) => {
+import { authApi } from '../utils/api';
+
+const Login = ({ onAuthSuccess }) => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
-      const response = await axios.post('http://localhost:8000/token', 
-        new URLSearchParams({
-          username: username,
-          password: password,
-          grant_type: 'password'
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-      
-      onLogin(response.data.access_token, { username });
-      navigate('/dashboard');
-    } catch (error) {
-      alert(`Login failed: ${error.response?.data?.detail || 'Invalid credentials'}`);
+      const response = await authApi.login(username.trim(), password);
+      await onAuthSuccess(response.access_token);
+      navigate('/dashboard', { replace: true });
+    } catch (apiError) {
+      setError(apiError.message || 'Не удалось выполнить вход');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box p={8} maxWidth="500px" borderWidth={1} borderRadius={8} boxShadow="lg">
-        <VStack spacing={4} align="stretch">
-          <Heading textAlign="center">Protein Design System</Heading>
-          <form onSubmit={handleSubmit}>
-            <Field.Root required>
-              <Field.Label>Username</Field.Label>
-              <Input 
-                type="text" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
-                placeholder="Enter your username"
-              />
-            </Field.Root>
-            <Field.Root mt={4} required>
-              <Field.Label>Password</Field.Label>
-              <Input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="Enter your password"
-              />
-            </Field.Root>
-            <Button 
-              mt={4} 
-              colorScheme="blue" 
-              width="full" 
-              type="submit" 
-              isLoading={isLoading}
-            >
-              Login
-            </Button>
-          </form>
-          <Text textAlign="center">
-            Don't have an account?{' '}
-            <Button variant="link" colorScheme="blue" onClick={() => navigate('/register')}>
-              Register
-            </Button>
-          </Text>
-        </VStack>
-      </Box>
-    </Box>
+    <div className="screen auth-screen">
+      <div className="auth-card">
+        <h1>Protein Design IS</h1>
+        <p className="muted">Вход в информационную систему генерации белков</p>
+
+        <form onSubmit={handleSubmit} className="form-grid">
+          <label>
+            Username
+            <input
+              type="text"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              placeholder="Введите username"
+              required
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Введите пароль"
+              required
+            />
+          </label>
+
+          {error && <p className="error-text">{error}</p>}
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Входим...' : 'Войти'}
+          </button>
+        </form>
+
+        <p className="muted auth-footer">
+          Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
+        </p>
+      </div>
+    </div>
   );
 };
 
