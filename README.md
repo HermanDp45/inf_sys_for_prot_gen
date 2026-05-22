@@ -21,6 +21,13 @@
 - Backend: FastAPI + SQLAlchemy
 - DB: SQLite (`app.db`)
 - Async (опционально): Celery + Redis (если не запущены, API использует fallback в синхронный режим)
+- 3D-viewer: локальная сборка Mol* в `frontend/public/molstar`
+
+## Документация для диплома
+
+- Полная схема информационной системы в draw.io: `docs/system-architecture.drawio`
+- Русифицированная версия схемы для диплома: `docs/system-architecture-ru.drawio`
+- В схеме отражены пользователь, React SPA, FastAPI API, JWT-защита, SQLite, файловое хранилище PDB, Mol* viewer и опциональный контур Redis/Celery.
 
 ## Быстрый запуск
 

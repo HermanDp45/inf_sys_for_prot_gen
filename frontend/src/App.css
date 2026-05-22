@@ -531,10 +531,22 @@ textarea {
   border: 1px solid #f2bdb8;
 }
 
+.alert-success {
+  color: #1f5c48;
+  background: #e5f6ed;
+  border: 1px solid #afdcc4;
+}
+
 :root[data-theme='dark'] .alert-error {
   color: #ffd9d5;
   background: rgba(179, 67, 61, 0.18);
   border-color: rgba(242, 125, 114, 0.42);
+}
+
+:root[data-theme='dark'] .alert-success {
+  color: #d8f5e5;
+  background: rgba(89, 190, 135, 0.16);
+  border-color: rgba(160, 222, 187, 0.34);
 }
 
 .error-text {

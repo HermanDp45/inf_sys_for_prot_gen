@@ -14,6 +14,7 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('structures');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
 
   const [savingProject, setSavingProject] = useState(false);
   const [projectForm, setProjectForm] = useState({
@@ -67,13 +68,14 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
 
     setSavingProject(true);
     setError('');
+    setNotice('');
     try {
       const updated = await projectApi.update(projectId, {
         name: projectForm.name.trim(),
         description: projectForm.description.trim(),
       });
       setProject(updated);
-      window.alert('Проект сохранен');
+      setNotice('Проект сохранен.');
     } catch (apiError) {
       setError(apiError.message || 'Не удалось сохранить проект');
     } finally {
@@ -85,6 +87,7 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
     event.preventDefault();
     setGenerating(true);
     setError('');
+    setNotice('');
     try {
       const payload = {
         mode: generationForm.mode,
@@ -96,9 +99,9 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
 
       const response = await proteinApi.generate(projectId, payload, true);
       if (response.status === 'queued') {
-        window.alert('Генерация запущена. Обнови список через пару секунд.');
+        setNotice('Генерация запущена. Обнови список через пару секунд.');
       } else {
-        window.alert('Структура сгенерирована.');
+        setNotice('Структура сгенерирована.');
       }
       await loadData();
       setTab('structures');
@@ -113,11 +116,13 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
     event.preventDefault();
     if (!uploadFile || !uploadName.trim()) {
       setError('Укажи имя структуры и выбери .pdb файл');
+      setNotice('');
       return;
     }
 
     setUploading(true);
     setError('');
+    setNotice('');
     try {
       await proteinApi.upload(projectId, uploadFile, uploadName.trim());
       setUploadName('');
@@ -128,6 +133,7 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
       }
       await loadData();
       setTab('structures');
+      setNotice('PDB-структура загружена и добавлена в проект.');
     } catch (apiError) {
       setError(apiError.message || 'Ошибка загрузки структуры');
     } finally {
@@ -144,6 +150,7 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
     try {
       await proteinApi.delete(structureId);
       setStructures((prev) => prev.filter((structure) => structure.id !== structureId));
+      setNotice('Структура удалена.');
     } catch (apiError) {
       setError(apiError.message || 'Не удалось удалить структуру');
     }
@@ -187,6 +194,7 @@ const ProjectPage = ({ theme, onToggleTheme }) => {
       </header>
 
       {error && <div className="alert alert-error">{error}</div>}
+      {notice && <div className="alert alert-success">{notice}</div>}
 
       <section className="hero-panel animate-in delay-1">
         <div>
